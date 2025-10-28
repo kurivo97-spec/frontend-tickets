@@ -1,17 +1,18 @@
-// svelte.config.js
-import adapter from '@sveltejs/adapter-static';
-// ... (otras importaciones)
+// svelte.config.js (SIMPLIFICADO AL MÍNIMO)
 
+import adapter from '@sveltejs/adapter-static'; // Mantenemos el import
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+/** @type {import('@sveltejs/kit').Config} */
 const config = {
-  // ...
+  preprocess: vitePreprocess(),
+
   kit: {
+    // Usamos adapter-static SIN opciones extra, solo el fallback
     adapter: adapter({
-      pages: 'build',
-      assets: 'build',
-      fallback: 'index.html', // <-- ¡ASEGÚRATE DE QUE ESTÉ ESTA LÍNEA!
-      precompress: false,
-      strict: true
+      fallback: 'index.html' 
     })
   }
 };
+
 export default config;
