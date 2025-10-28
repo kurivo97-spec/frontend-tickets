@@ -1,0 +1,15 @@
+/* src/app.css */
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+
+/* Tus tokens de diseño (v4 usa @theme con CSS vars) */
+@theme {
+  --color-principal: #5C8B8A;
+  --color-oscuro:   #0A4A2B;
+  --color-acento:   #F2B90C;
+  --color-fondo:    #F5F7FA;
+  --color-texto:    #333333;
+}
+
+/* Ejemplos de uso (opcional):
+   text-principal, bg-fondo, border-oscuro, etc. */
