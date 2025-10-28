@@ -51,7 +51,7 @@
 
 <nav class="bg-principal text-white shadow-lg sticky top-0 z-50">
   <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="hidden md:flex items-center space-x-2 lg:space-x-4"> {/* Cambiado a md:flex y ajustado space */}
+    <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
 
   <span class="text-sm font-medium hidden lg:inline"> {/* Cambiado a lg:inline */}
     Bienvenido, {nombreUsuario}
