@@ -36,10 +36,18 @@
     errorApi = '';
     exito = '';
 
-    // Obtenemos el token
-    if (browser) {
-      token = localStorage.getItem('authToken');
-    }
+    // Obtenemos el token de autenticación DESDE LA COOKIE
+let token = null;
+if (browser) {
+  // Buscamos la cookie llamada 'authToken'
+  const cookies = document.cookie.split('; ');
+  const tokenCookie = cookies.find(row => row.startsWith('authToken='));
+  if (tokenCookie) {
+    token = tokenCookie.split('=')[1]; // Extraemos el valor del token
+  }
+}
+// El resto de la función (if (!token) { ... }) sigue igual
+
     if (!token) {
       errorApi = "No estás autenticado. Por favor, inicia sesión de nuevo.";
       isLoading = false;
