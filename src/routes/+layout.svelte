@@ -1,20 +1,15 @@
 <script>
   import "../app.css"; 
-  import Navbar from '$lib/components/Navbar.svelte'; // <-- 1. Importamos el Navbar
-  import { page } from '$app/stores'; // <-- 2. Importamos 'page' para saber la ruta actual
-
-  // 3. Verificamos si la ruta actual es la raíz ('/')
-  $: isLoginPage = $page.route.id === '/'; 
+  // import Navbar from '$lib/components/Navbar.svelte'; // <-- Comentado/Borrado
+  // import { page } from '$app/stores'; // <-- Comentado/Borrado
+  // $: isLoginPage = $page.route.id === '/'; // <-- Comentado/Borrado
 </script>
 
 <div class="min-h-screen bg-fondo text-texto flex flex-col">
 
-  {#if !isLoginPage}
-    <Navbar /> 
-  {/if}
-
+  {/* <-- Comentado/Borrado */}
   <main class="flex-grow">
     <slot /> 
   </main>
 
-  </div>
+</div>
