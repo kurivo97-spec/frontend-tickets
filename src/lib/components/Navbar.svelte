@@ -53,10 +53,10 @@
   <div class="container mx-auto px-4 sm:px-6 lg:px-8">
     <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
 
-  <span class="text-sm font-medium hidden lg:inline"> {/* Cambiado a lg:inline */}
+  <span class="text-sm font-medium hidden lg:inline">
     Bienvenido, {nombreUsuario}
   </span>
-  <span class="text-gray-500 hidden lg:inline">|</span> {/* Cambiado a lg:inline */}
+  <span class="text-gray-500 hidden lg:inline">|</span> 
 
   <a
     href="/dashboard"
@@ -87,7 +87,7 @@
 
 <div class="-mr-2 flex md:hidden">
    <button on:click={handleLogout} class="bg-red-600 p-2 rounded-md text-white text-sm">Cerrar</button>
-   {/* TODO: Implementar menú móvil real aquí */}
+   
  </div>
   </div>
 </nav>
