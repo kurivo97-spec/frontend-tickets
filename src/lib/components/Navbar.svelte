@@ -92,8 +92,9 @@
       </div>
       
       <div class="-mr-2 flex md:hidden">
-        <button on:click={handleLogout} class="bg-red-600 p-2 rounded-md text-white text-sm">Cerrar</Ssr>
-      </div>
+        <button on:click={handleLogout} class="bg-red-600 p-2 rounded-md text-white text-sm">
+          Cerrar
+        </button> </div>
 
     </div>
   </div>
