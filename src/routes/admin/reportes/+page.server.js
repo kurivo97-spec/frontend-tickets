@@ -17,7 +17,7 @@ export async function load({ request }) {
   // For now, we let the API handle the role check.
 
   try {
-    const response = await fetch(`${envPUBLIC_API_URL}/admin/reportes`, {
+    const response = await fetch(`${env.PUBLIC_API_URL}/admin/reportes`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
