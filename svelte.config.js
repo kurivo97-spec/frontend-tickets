@@ -1,13 +1,25 @@
-import adapter from '@sveltejs/adapter-auto';
+// svelte.config.js
+
+// 1. Importa adapter-static
+import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
-		adapter: adapter()
-	}
+  // ... (puede que tengas 'preprocess' aquí)
+  preprocess: vitePreprocess(),
+
+  kit: {
+    // 2. Cambia 'adapter-auto' por 'adapter-static'
+    adapter: adapter({
+      // Opciones por defecto para un sitio estático (SPA)
+      pages: 'build',
+      assets: 'build',
+      fallback: 'index.html', // Importante para que funcionen las rutas
+      precompress: false,
+      strict: true
+    })
+  }
 };
 
 export default config;
