@@ -1,75 +1,76 @@
+// src/routes/+page.svelte (SCRIPT CORREGIDO FINAL)
+
 <script>
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  // BORRAMOS: import { env } from '$env/dynamic/public'; // Ya no se importa aquí
 
-  // Variables para el formulario
+  // ¡NUEVO! Recibimos 'data' del layout.server.js
+  export let data;
+  // Guardamos la URL de la API que viene en 'data'
+  const apiUrl = data.apiUrl;
+
+  // ... (resto de variables: username, password, etc.) ...
   let username = '';
   let password = '';
   let isLoading = false;
   let errorLogin = '';
 
-  // Variable de entorno de la API
-  const PUBLIC_API_URL = import.meta.env.VITE_PUBLIC_API_URL;
+  // ... (onMount sigue igual) ...
 
-  // Si el usuario ya está logueado, redirigir al dashboard
-  onMount(() => {
-    if (browser) {
-      const token = document.cookie.includes('authToken=');
-      if (token) {
-        goto('/dashboard');
-      }
-    }
-  });
-
-  // --- FUNCIÓN DE LOGIN (CORREGIDA) ---
+  // --- FUNCIÓN DE LOGIN (USA apiUrl) ---
   async function handleLogin() {
     isLoading = true;
     errorLogin = '';
 
+    // ¡VERIFICA QUE apiUrl TENGA VALOR!
+    if (!apiUrl) {
+        errorLogin = 'Error crítico: La URL de la API no está configurada.';
+        isLoading = false;
+        return;
+    }
+
     try {
-      const response = await fetch(`${env.PUBLIC_API_URL}/login`, {
+      // ¡CAMBIO! Usamos 'apiUrl' en lugar de 'env.PUBLIC_API_URL'
+      const response = await fetch(`${apiUrl}/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
 
       // Intenta leer la respuesta como JSON
-      const data = await response.json();
+      const responseData = await response.json(); // Renombramos a responseData
 
       if (response.ok) {
-        // --- ¡AQUÍ ESTABA EL ERROR PROBABLEMENTE! ---
-        
-        // 1. Guardar el token en las cookies
-        // (Settea la cookie para que expire en 1 día)
+        // Guardar token en cookie
         const d = new Date();
         d.setTime(d.getTime() + (24 * 60 * 60 * 1000));
         const expires = "expires=" + d.toUTCString();
-        document.cookie = `authToken=${data.token}; ${expires}; path=/; SameSite=Lax`;
+        document.cookie = `authToken=${responseData.token}; ${expires}; path=/; SameSite=Lax`;
 
-        // 2. Guardar los datos del usuario en localStorage
-        // Nos aseguramos de acceder a 'data.usuario' (con 'u')
-        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+        // Guardar usuario en localStorage
+        localStorage.setItem('usuario', JSON.stringify(responseData.usuario));
 
-        // 3. Redirigir según si el perfil está completo
-        // Nos aseguramos de leer 'data.usuario.datos_actualizados'
-        if (data.usuario.datos_actualizados) {
+        // Redirigir
+        if (responseData.usuario.datos_actualizados) {
           goto('/dashboard');
         } else {
           goto('/actualizar-perfil');
         }
-        
+
       } else {
-        // Si la API devuelve un error (ej: 401, 404)
-        errorLogin = data.error || 'Error desconocido al iniciar sesión.';
+        errorLogin = responseData.error || 'Error desconocido.';
       }
 
     } catch (error) {
-      // Si hay un error de red o un JSON mal formado (como antes)
       console.error("Error en handleLogin:", error);
-      errorLogin = `Error en la conexión: ${error.message}. ¿Está la API en línea?`;
+      // Mostramos un error más útil
+      if (error instanceof SyntaxError) { // Si falló el response.json()
+         errorLogin = `Error en la conexión: Respuesta inesperada de la API. ¿Está la API (${apiUrl}) en línea y funcionando?`;
+      } else {
+         errorLogin = `Error de red: ${error.message}`;
+      }
     } finally {
       isLoading = false;
     }
