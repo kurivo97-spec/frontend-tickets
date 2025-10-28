@@ -1,6 +1,6 @@
 // src/routes/tecnico/dashboard/+page.server.js
 
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { redirect } from '@sveltejs/kit';
 import { parse } from 'cookie';
 
@@ -17,7 +17,7 @@ export async function load({ request }) {
 
   try {
     // 2. LLAMAMOS AL ENDPOINT DEL TÉCNICO
-    const response = await fetch(`${PUBLIC_API_URL}/tecnico/dashboard`, {
+    const response = await fetch(`${env.PUBLIC_API_URL}/tecnico/dashboard`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

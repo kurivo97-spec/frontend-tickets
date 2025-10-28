@@ -1,6 +1,6 @@
 // src/routes/tickets/[id_ticket]/+page.server.js
 
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { error as svelteError, redirect } from '@sveltejs/kit';
 import { parse } from 'cookie';
 
@@ -18,7 +18,7 @@ export async function load({ params, request }) {
 
   try {
     // LLAMAMOS A UN NUEVO ENDPOINT DE LA API: /tickets/:id
-    const response = await fetch(`${PUBLIC_API_URL}/tickets/${idTicket}`, {
+    const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

@@ -1,6 +1,6 @@
 <script>
   import { browser } from '$app/environment';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation'; // Importar goto para el link de "Ver Detalles"
 
@@ -39,7 +39,7 @@
     ratingError[idTicket] = '';
 
     try {
-      const response = await fetch(`${PUBLIC_API_URL}/tickets/${idTicket}/calificar`, {
+      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/calificar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

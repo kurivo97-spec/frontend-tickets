@@ -1,7 +1,7 @@
 <script>
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
   import { onMount } from 'svelte'; // Para cargar datos al inicio
 
   let nombre_completo = '';
@@ -34,7 +34,7 @@
 
   async function cargarListas() {
     try {
-      const response = await fetch(`${PUBLIC_API_URL}/configuracion`);
+      const response = await fetch(`${env.PUBLIC_API_URL}/configuracion`);
       if (!response.ok) throw new Error('Error al cargar configuración');
       const data = await response.json();
       areas = data.areas || [];

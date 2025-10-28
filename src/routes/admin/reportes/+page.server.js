@@ -1,6 +1,6 @@
 // src/routes/admin/reportes/+page.server.js
 
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { redirect } from '@sveltejs/kit';
 import { parse } from 'cookie';
 
@@ -17,7 +17,7 @@ export async function load({ request }) {
   // For now, we let the API handle the role check.
 
   try {
-    const response = await fetch(`${PUBLIC_API_URL}/admin/reportes`, {
+    const response = await fetch(`${envPUBLIC_API_URL}/admin/reportes`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

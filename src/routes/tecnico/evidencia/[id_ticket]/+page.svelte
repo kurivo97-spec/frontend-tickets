@@ -1,6 +1,6 @@
 <script>
   import { browser } from '$app/environment';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
   import { page } from '$app/stores'; // Para obtener el ID del ticket de la URL
   import { goto } from '$app/navigation'; // Para redirigir después de subir
 
@@ -34,7 +34,7 @@
     formData.append('evidencia', archivoEvidencia[0]);
 
     try {
-      const response = await fetch(`${PUBLIC_API_URL}/tickets/${idTicket}/adjuntar-evidencia`, {
+      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/adjuntar-evidencia`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

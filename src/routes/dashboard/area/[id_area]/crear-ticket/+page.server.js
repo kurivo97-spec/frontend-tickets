@@ -1,6 +1,6 @@
 // src/routes/dashboard/area/[id_area]/crear-ticket/+page.server.js
 
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { error as svelteError } from '@sveltejs/kit';
 
 export async function load({ params }) {
@@ -8,7 +8,7 @@ export async function load({ params }) {
 
   try {
     // 1. Llamamos al endpoint de configuración (trae TODO: áreas y sub-categorías)
-    const response = await fetch(`${PUBLIC_API_URL}/configuracion`);
+    const response = await fetch(`${env.PUBLIC_API_URL}/configuracion`);
 
     if (!response.ok) {
       throw new Error('No se pudieron cargar los datos de configuración desde la API');

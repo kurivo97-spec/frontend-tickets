@@ -5,7 +5,7 @@
 
   // Importaciones necesarias
   import { browser } from '$app/environment';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation'; // <-- Importado para redirigir
 
@@ -37,7 +37,7 @@
 
     try {
       // Llamamos al endpoint PUT /tickets/:id/asignar
-      const response = await fetch(`${PUBLIC_API_URL}/tickets/${idTicket}/asignar`, {
+      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/asignar`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` } // Enviamos el token
       });
@@ -71,7 +71,7 @@
 
     try {
       // Llamamos al endpoint PUT /tickets/:id/resolver
-      const response = await fetch(`${PUBLIC_API_URL}/tickets/${idTicket}/resolver`, {
+      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/resolver`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` } // Enviamos el token
       });

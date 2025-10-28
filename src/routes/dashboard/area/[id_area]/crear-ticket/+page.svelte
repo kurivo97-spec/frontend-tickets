@@ -2,7 +2,7 @@
   // Importaciones de SvelteKit
   import { goto } from '$app/navigation';
   import { browser } from '$app/environment';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
 
   // Recibimos los datos cargados
   export let data;
@@ -48,7 +48,7 @@
 
     try {
       // 1. Crear el ticket (texto)
-      const response = await fetch(`${PUBLIC_API_URL}/tickets/crear`, {
+      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/crear`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +103,7 @@
         formData.append('foto', file);
 
         console.log(`Subiendo ${file.name} para ticket #${idTicket}...`);
-        const response = await fetch(`${PUBLIC_API_URL}/tickets/${idTicket}/adjuntar-foto`, {
+        const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/adjuntar-foto`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData

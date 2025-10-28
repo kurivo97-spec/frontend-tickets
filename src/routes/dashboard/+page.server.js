@@ -1,7 +1,7 @@
 // src/routes/dashboard/+page.server.js
 
 // Importamos la URL de la API desde el .env
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ cookies }) {
@@ -13,7 +13,7 @@ export async function load({ cookies }) {
 
   try {
     // 1. Llamamos al endpoint de configuración que creamos en el Hito 3
-    const response = await fetch(`${PUBLIC_API_URL}/configuracion`);
+    const response = await fetch(`${env.PUBLIC_API_URL}/configuracion`);
 
     if (!response.ok) {
       throw new Error('No se pudieron cargar los datos de configuración desde la API');

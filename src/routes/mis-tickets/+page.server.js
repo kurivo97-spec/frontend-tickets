@@ -1,6 +1,6 @@
 // src/routes/mis-tickets/+page.server.js (ACTUALIZADO PARA LEER COOKIES)
 
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { redirect } from '@sveltejs/kit';
 import { parse } from 'cookie'; // CAMBIO: Importamos 'parse'
 
@@ -18,7 +18,7 @@ export async function load({ request }) { // CAMBIO: Usamos 'request' en lugar d
 
   try {
     // Llamamos a la API ENVIANDO EL TOKEN
-    const response = await fetch(`${PUBLIC_API_URL}/mis-tickets`, {
+    const response = await fetch(`${env.PUBLIC_API_URL}/mis-tickets`, {
       headers: {
         // ¡Enviamos el token en el encabezado Authorization!
         'Authorization': `Bearer ${token}`
