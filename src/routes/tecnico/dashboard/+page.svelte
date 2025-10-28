@@ -1,22 +1,36 @@
 <script>
+  // 'data' viene de +page.server.js
   export let data;
   $: tickets = data.tickets || [];
   $: errorApi = data.error || null;
 
   // Importaciones necesarias
   import { browser } from '$app/environment';
-  import { env } from '$env/dynamic/public';
+  // 'env' es para la API URL, pero 'apiUrl' ya viene en 'data'
+  // import { env } from '$env/dynamic/public'; 
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation'; // <-- Importado para redirigir
+  import { goto } from '$app/navigation';
 
+  // Usamos la URL de la API que viene de +layout.server.js
+  const apiUrl = data.apiUrl; 
+  
   let token = null;
   let actionState = {}; // Guarda el estado de acción por ID de ticket ('asignando', 'resolviendo')
   let actionError = {}; // Guarda errores de acción por ID de ticket
 
   onMount(() => {
-    // Obtenemos el token al cargar la página
+    // --- ¡CORRECCIÓN AQUÍ! ---
+    // Obtenemos el token al cargar la página (desde la COOKIE)
     if (browser) {
-      token = localStorage.getItem('authToken'); // O leer desde cookie si se implementa
+      const cookies = document.cookie.split('; ');
+      const tokenCookie = cookies.find(row => row.startsWith('authToken='));
+      if (tokenCookie) {
+        token = tokenCookie.split('=')[1];
+      } else {
+        console.error("No se encontró la cookie de autenticación.");
+        // Si no hay cookie, no debería estar en esta página
+        goto('/'); 
+      }
     }
   });
 
@@ -27,77 +41,90 @@
       return date.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
   }
 
-  // --- FUNCIÓN ASIGNAR ---
+  // --- FUNCIÓN ASIGNAR (CORREGIDA) ---
   async function handleAsignar(idTicket) {
-    if (!token) return alert('No autenticado'); // Mejorar manejo de errores
-
-    actionState[idTicket] = 'asignando'; // Poner estado 'cargando'
-    actionError[idTicket] = '';
-    actionState = actionState; // Forzar actualización
-
-    try {
-      // Llamamos al endpoint PUT /tickets/:id/asignar
-      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/asignar`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` } // Enviamos el token
-      });
-
-      const responseData = await response.json();
-      if (!response.ok) throw new Error(responseData.error || 'Error al asignar el ticket');
-
-      // Éxito: Actualizamos la lista de tickets localmente
-      tickets = tickets.map(t =>
-        t.id_ticket === idTicket ? { ...t, nombre_estado: 'En Proceso' } : t
-      );
-      tickets = tickets; // Forzar actualización
-
-    } catch (err) {
-      console.error(`Error asignando ticket ${idTicket}:`, err);
-      actionError[idTicket] = err.message; // Mostramos el error
-    } finally {
-      actionState[idTicket] = ''; // Limpiamos el estado 'cargando'
-      actionState = actionState;
-      actionError = actionError; // Forzar actualización de errores
+    if (!token) {
+        actionError[idTicket] = 'No autenticado. Recargando...';
+        actionError = actionError;
+        setTimeout(() => location.reload(), 1500); // Recarga si se pierde el token
+        return;
     }
-  }
+    if (!apiUrl) {
+        actionError[idTicket] = 'Error: URL de API no cargada.';
+        actionError = actionError;
+        return;
+    }
 
-  // --- FUNCIÓN RESOLVER (CON REDIRECCIÓN) ---
-  async function handleResolver(idTicket) {
-    if (!token) return alert('No autenticado');
-
-    actionState[idTicket] = 'resolviendo'; // Poner estado 'cargando'
+    actionState[idTicket] = 'asignando';
     actionError[idTicket] = '';
     actionState = actionState;
 
     try {
-      // Llamamos al endpoint PUT /tickets/:id/resolver
-      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/resolver`, {
+      // Usamos la variable 'apiUrl'
+      const response = await fetch(`${apiUrl}/tickets/${idTicket}/asignar`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` } // Enviamos el token
+        headers: { 'Authorization': `Bearer ${token}` } 
       });
 
       const responseData = await response.json();
-      if (!response.ok) throw new Error(responseData.error || 'Error al resolver el ticket');
+      if (!response.ok) throw new Error(responseData.error || 'Error al asignar');
 
-      // Éxito: Actualizamos la lista localmente (o quitamos el ticket)
-      // Cambiamos el estado para que visualmente se actualice antes de redirigir
+      // Éxito: Actualizamos la lista localmente
       tickets = tickets.map(t =>
-        t.id_ticket === idTicket ? { ...t, nombre_estado: 'Resuelto' } : t
+        t.id_ticket === idTicket ? { ...t, nombre_estado: 'En Proceso' } : t
       );
-      tickets = tickets; // Forzar actualización
+      tickets = tickets;
 
-      // ¡REDIRECCIÓN A SUBIR EVIDENCIA!
+    } catch (err) {
+      console.error(`Error asignando ticket ${idTicket}:`, err);
+      actionError[idTicket] = err.message;
+    } finally {
+      actionState[idTicket] = '';
+      actionState = actionState;
+      actionError = actionError;
+    }
+  }
+
+  // --- FUNCIÓN RESOLVER (CORREGIDA) ---
+  async function handleResolver(idTicket) {
+    if (!token) {
+        actionError[idTicket] = 'No autenticado. Recargando...';
+        actionError = actionError;
+        setTimeout(() => location.reload(), 1500);
+        return;
+    }
+    if (!apiUrl) {
+        actionError[idTicket] = 'Error: URL de API no cargada.';
+        actionError = actionError;
+        return;
+    }
+
+    actionState[idTicket] = 'resolviendo';
+    actionError[idTicket] = '';
+    actionState = actionState;
+
+    try {
+      // Usamos la variable 'apiUrl'
+      const response = await fetch(`${apiUrl}/tickets/${idTicket}/resolver`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) throw new Error(responseData.error || 'Error al resolver');
+
+      // Éxito: Redirigimos a subir evidencia
       goto(`/tecnico/evidencia/${idTicket}`);
+      // No necesitamos actualizar el estado localmente si vamos a redirigir
 
     } catch (err) {
       console.error(`Error resolviendo ticket ${idTicket}:`, err);
-      actionError[idTicket] = err.message; // Mostramos el error
-       // Si falla, quitamos el estado 'cargando' aquí
-       actionState[idTicket] = '';
-       actionState = actionState;
-       actionError = actionError;
-    } 
-    // No ponemos finally aquí porque la redirección debe ocurrir antes
+      actionError[idTicket] = err.message;
+      actionState[idTicket] = ''; // Limpiamos estado solo si hay error
+      actionState = actionState;
+      actionError = actionError;
+    }
+    // No hay 'finally' porque no queremos limpiar el estado si la redirección es exitosa
   }
 </script>
 
@@ -169,7 +196,7 @@
                     class="text-white bg-principal hover:bg-opacity-80 px-3 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-wait transition-colors"
                   >
                     {#if actionState[ticket.id_ticket] === 'asignando'}
-                       <svg class="animate-spin inline h-3 w-3 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <svg class="animate-spin inline h-3 w-3 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     {/if}
                     Asignarme
                   </button>
@@ -179,8 +206,8 @@
                     disabled={actionState[ticket.id_ticket] === 'resolviendo'}
                     class="text-white bg-acento hover:bg-opacity-80 px-3 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-wait transition-colors"
                   >
-                     {#if actionState[ticket.id_ticket] === 'resolviendo'}
-                       <svg class="animate-spin inline h-3 w-3 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    {#if actionState[ticket.id_ticket] === 'resolviendo'}
+                        <svg class="animate-spin inline h-3 w-3 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     {/if}
                     Resolver
                   </button>
