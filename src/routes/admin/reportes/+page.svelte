@@ -113,9 +113,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
       <div class="lg:col-span-1 space-y-8">
-         <div class="bg-white p-6 rounded-xl shadow-lg h-80 relative flex flex-col"> {/* Flex container */}
+         <div class="bg-white p-6 rounded-xl shadow-lg h-80 relative flex flex-col"> 
             <h2 class="text-xl font-semibold text-oscuro mb-4 text-center">Tickets por Estado</h2>
-            <div class="flex-grow relative"> {/* Canvas container */}
+            <div class="flex-grow relative"> 
                {#if reportes.ticketsPorEstado && reportes.ticketsPorEstado.length > 0}
                  <canvas bind:this={canvasEstado}></canvas>
                {:else}
@@ -132,9 +132,9 @@
       </div>
 
       <div class="lg:col-span-2 space-y-8">
-         <div class="bg-white p-6 rounded-xl shadow-lg h-96 relative flex flex-col"> {/* Flex container */}
+         <div class="bg-white p-6 rounded-xl shadow-lg h-96 relative flex flex-col"> 
             <h2 class="text-xl font-semibold text-oscuro mb-4 text-center">Tickets por Área</h2>
-            <div class="flex-grow relative"> {/* Canvas container */}
+            <div class="flex-grow relative"> 
               {#if reportes.ticketsPorArea && reportes.ticketsPorArea.length > 0}
                  <canvas bind:this={canvasArea}></canvas>
               {:else}
