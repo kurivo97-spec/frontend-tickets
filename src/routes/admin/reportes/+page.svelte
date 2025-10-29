@@ -107,7 +107,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
       <div class="lg:col-span-1 space-y-8">
-         <div class="bg-white p-6 rounded-xl shadow-lg h-80 relative"> {/* Añadido 'relative' */}
+         <div class="bg-white p-6 rounded-xl shadow-lg h-80 relative"> 
             <h2 class="text-xl font-semibold text-oscuro mb-4 text-center">Tickets por Estado</h2>
             {#if chartDataEstado.labels && chartDataEstado.labels.length > 0}
                <canvas bind:this={canvasEstado}></canvas>
@@ -124,7 +124,7 @@
       </div>
 
       <div class="lg:col-span-2 space-y-8">
-         <div class="bg-white p-6 rounded-xl shadow-lg h-96 relative"> {/* Añadido 'relative' */}
+         <div class="bg-white p-6 rounded-xl shadow-lg h-96 relative"> 
             <h2 class="text-xl font-semibold text-oscuro mb-4 text-center">Tickets por Área</h2>
              {#if chartDataArea.labels && chartDataArea.labels.length > 0}
                 <canvas bind:this={canvasArea}></canvas>
