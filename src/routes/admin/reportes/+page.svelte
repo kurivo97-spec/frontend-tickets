@@ -1,10 +1,12 @@
 <script>
   // Importamos Chart.js y funciones de Svelte
   import { Chart, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
-  import { onDestroy, browser } from 'svelte/internal'; // Usamos 'browser' de internal o 'svelte/environment'
+  // --- ¡CORRECCIÓN AQUÍ! ---
+  import { onDestroy } from 'svelte'; 
+  import { browser } from '$app/environment'; // Esta es la importación correcta para 'browser'
+  // --------------------------
 
   // --- ¡REGISTRO GLOBAL! ---
-  // Registramos todos los componentes necesarios una sola vez.
   Chart.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
 
   // Recibimos los datos cargados
@@ -15,19 +17,18 @@
   // Variables para las instancias y los canvas
   let chartEstadoInstance = null;
   let chartAreaInstance = null;
-  let canvasEstado; // Se bindea con el <canvas> de Estado
-  let canvasArea; // Se bindea con el <canvas> de Área
+  let canvasEstado; 
+  let canvasArea; 
 
   // --- ¡LÓGICA REACTIVA! ---
-  // Este bloque se ejecutará automáticamente si 'reportes', 'canvasEstado' o 'canvasArea' cambian.
+  // Se ejecuta si 'browser', 'reportes', 'canvasEstado' o 'canvasArea' cambian.
   $: if (browser && reportes && canvasEstado && canvasArea) {
     
-    // 1. Preparamos los datos (esto es seguro ejecutarlo múltiples veces)
     const chartDataEstado = {
       labels: reportes.ticketsPorEstado?.map(item => item.nombre_estado) || [],
       datasets: [{
           label: 'Tickets por Estado', data: reportes.ticketsPorEstado?.map(item => item.total) || [],
-          backgroundColor: ['#3B82F6','#F59E0B','#10B981','#8B5CF6'], // Azul, Naranja, Verde, Morado
+          backgroundColor: ['#3B82F6','#F59E0B','#10B981','#8B5CF6'],
           borderColor: ['#FFFFFF'], borderWidth: 2,
         },],
     };
@@ -43,15 +44,11 @@
     const options = { responsive: true, maintainAspectRatio: false };
     const optionsArea = { ...options, indexAxis: 'y', scales: { x: { beginAtZero: true } } };
 
-    // 2. --- ¡LA CLAVE! DESTRUIMOS LOS GRÁFICOS ANTERIORES ---
-    if (chartEstadoInstance) {
-      chartEstadoInstance.destroy();
-    }
-    if (chartAreaInstance) {
-      chartAreaInstance.destroy();
-    }
+    // Destruimos los gráficos anteriores
+    if (chartEstadoInstance) chartEstadoInstance.destroy();
+    if (chartAreaInstance) chartAreaInstance.destroy();
 
-    // 3. Creamos los nuevos gráficos
+    // Creamos los nuevos gráficos
     try {
       if (chartDataEstado.labels.length > 0) {
         chartEstadoInstance = new Chart(canvasEstado, {
@@ -67,7 +64,6 @@
       console.error("Error creando los gráficos:", e);
     }
   }
-  // --- Fin del bloque reactivo ---
 
   // Destruimos los gráficos al salir de la página
   onDestroy(() => {
