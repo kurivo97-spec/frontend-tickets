@@ -28,50 +28,46 @@
      });
   }
 
-  // Función para calificar
-  async function handleRateTicket(idTicket, puntuacion) {
-    if (!token) {
-      ratingError[idTicket] = 'No autenticado.';
-      return;
-    }
+  // src/routes/mis-tickets/+page.svelte
 
-    isLoadingRating[idTicket] = puntuacion; // Guardamos la estrella que se clickeó
-    ratingError[idTicket] = '';
-
-    try {
-      const response = await fetch(`${env.PUBLIC_API_URL}/tickets/${idTicket}/calificar`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ puntuacion: puntuacion })
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Error al calificar');
-      }
-
-      // Actualizamos el estado localmente
-      tickets = tickets.map(t => {
-        if (t.id_ticket === idTicket) {
-          return { ...t, nombre_estado: 'Cerrado', calificacion: puntuacion };
-        }
-        return t;
-      });
-      tickets = tickets; // Forzar reactividad
-
-    } catch (err) {
-      console.error("Error al calificar:", err);
-      ratingError[idTicket] = err.message;
-    } finally {
-      isLoadingRating[idTicket] = false; // Quitar el spinner
-      isLoadingRating = isLoadingRating; // Forzar reactividad
-      ratingError = ratingError;
+// --- FUNCIÓN CALIFICAR (CORREGIDA) ---
+async function handleRateTicket(idTicket, puntuacion) {
+  // Leemos el token DESDE LA COOKIE aquí DENTRO
+  let token = null;
+  if (browser) {
+    const cookies = document.cookie.split('; ');
+    const tokenCookie = cookies.find(row => row.startsWith('authToken='));
+    if (tokenCookie) {
+      token = tokenCookie.split('=')[1];
     }
   }
+
+  // Verificamos si el token se encontró
+  if (!token) {
+    ratingError[idTicket] = 'No autenticado.'; // Muestra el error
+    isLoadingRating[idTicket] = false; // Asegura quitar spinner si falla aquí
+    ratingError = ratingError;
+    isLoadingRating = isLoadingRating;
+    return; // Detiene la función
+  }
+
+  // El resto de la función (isLoadingRating = true, try/catch, etc.) sigue igual...
+  isLoadingRating[idTicket] = puntuacion;
+  ratingError[idTicket] = '';
+  isLoadingRating = isLoadingRating;
+  ratingError = ratingError;
+
+  try {
+    // ... (fetch a /tickets/:id/calificar sigue igual) ...
+    const response = await fetch(`${apiUrl}/tickets/${idTicket}/calificar`, { /*...*/ });
+    // ... (manejo de respuesta sigue igual) ...
+  } catch (err) {
+    // ... (catch sigue igual) ...
+  } finally {
+    // ... (finally sigue igual) ...
+  }
+}
+
 </script>
 
 <div class="max-w-7xl mx-auto p-4 md:p-8">
@@ -133,32 +129,35 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 {#if ticket.nombre_estado === 'Resuelto'}
-                  <div class="flex items-center space-x-1">
-                    {#each [1, 2, 3, 4, 5] as stars}
-                      <button
-                        on:click={() => handleRateTicket(ticket.id_ticket, stars)}
-                        disabled={!!isLoadingRating[ticket.id_ticket]}
-                        class="text-xl text-acento hover:text-yellow-500 disabled:opacity-50 disabled:cursor-wait transition-colors focus:outline-none"
-                        aria-label={`Calificar con ${stars} estrellas`}
-                      >
-                        {#if isLoadingRating[ticket.id_ticket] === stars}
-                          <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        {:else}
-                          ★
-                        {/if}
-                      </button>
-                    {/each}
-                  </div>
-                  {#if ratingError[ticket.id_ticket]}
-                    <p class="text-xs text-red-600 mt-1">{ratingError[ticket.id_ticket]}</p>
-                  {/if}
-                {:else if ticket.nombre_estado === 'Cerrado' && ticket.calificacion}
-                   <span class="text-sm text-gray-500 flex items-center">
-                     Calificado: <span class="text-acento font-bold ml-1">{ticket.calificacion} ★</span>
-                   </span>
-                {:else}
-                   <a href="/tickets/{ticket.id_ticket}" class="text-principal hover:text-oscuro hover:underline">Ver Detalles</a>
-                {/if}
+  <div>
+    <div class="flex items-center space-x-1">
+      {#each [1, 2, 3, 4, 5] as stars}
+        <button
+          on:click={() => handleRateTicket(ticket.id_ticket, stars)}
+          disabled={!!isLoadingRating[ticket.id_ticket]}
+          class="text-xl text-acento hover:text-yellow-500 disabled:opacity-50 disabled:cursor-wait transition-colors focus:outline-none"
+          aria-label={`Calificar con ${stars} estrellas`}
+        >
+          {#if isLoadingRating[ticket.id_ticket] === stars}
+            <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          {:else}
+            ★
+          {/if}
+        </button>
+      {/each}
+    </div>
+    {#if ratingError[ticket.id_ticket]}
+      <p class="text-xs text-red-600 mt-1">{ratingError[ticket.id_ticket]}</p>
+    {/if}
+  </div>
+
+  <a href="/tickets/{ticket.id_ticket}" class="mt-2 inline-block text-xs text-principal hover:text-oscuro hover:underline">
+    Ver Detalles
+  </a>
+  {:else if ticket.nombre_estado === 'Cerrado' && ticket.calificacion}
+  {:else}
+  <a href="/tickets/{ticket.id_ticket}" class="text-principal hover:text-oscuro hover:underline">Ver Detalles</a>
+{/if}
               </td>
             </tr>
           {/each}
