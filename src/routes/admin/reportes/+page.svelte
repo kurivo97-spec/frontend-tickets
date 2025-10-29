@@ -1,12 +1,10 @@
 <script>
   // Importamos Chart.js y funciones de Svelte
   import { Chart, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
-  import { onMount, onDestroy, afterUpdate } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
-  // --- ¡REGISTRO GLOBAL (ANTES DE onMount)! ---
-  // Registramos todos los componentes que usaremos.
-  Chart.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
-
+  // NO registramos aquí
+  
   // Recibimos los datos cargados
   export let data;
   $: reportes = data.reportes;
@@ -18,18 +16,24 @@
   let canvasEstado;
   let canvasArea;
 
-  // Variables para los datos de los gráficos
-  let chartDataEstado = {};
-  let chartDataArea = {};
-
   // Opciones
   const options = { responsive: true, maintainAspectRatio: false };
   const optionsArea = { ...options, indexAxis: 'y', scales: { x: { beginAtZero: true } } };
 
-  // Función para crear/actualizar gráficos
-  function updateCharts() {
+  // --- CREAMOS GRÁFICOS CUANDO EL COMPONENTE SE MONTA ---
+  onMount(() => {
+    // --- ¡REGISTRAMOS LOS COMPONENTES AQUÍ DENTRO! ---
+    // Esto asegura que se registren en el navegador antes de usarlos.
+    try {
+      Chart.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
+    } catch (e) {
+      console.error("Error al registrar Chart.js:", e);
+    }
+    // --- Fin del Registro ---
+
+    // Ahora intentamos crear los gráficos
     if (reportes && canvasEstado) {
-      chartDataEstado = {
+      const chartDataEstado = {
         labels: reportes.ticketsPorEstado?.map(item => item.nombre_estado) || [],
         datasets: [{
             label: 'Tickets por Estado', data: reportes.ticketsPorEstado?.map(item => item.total) || [],
@@ -42,7 +46,7 @@
     }
 
     if (reportes && canvasArea) {
-      chartDataArea = {
+      const chartDataArea = {
         labels: reportes.ticketsPorArea?.map(item => item.nombre_area) || [],
         datasets: [{
             label: 'Total Tickets por Área', data: reportes.ticketsPorArea?.map(item => item.total) || [],
@@ -51,13 +55,6 @@
       };
       if (chartAreaInstance) chartAreaInstance.destroy();
       chartAreaInstance = new Chart(canvasArea, { type: 'bar', data: chartDataArea, options: optionsArea });
-    }
-  }
-
-  // Usamos afterUpdate para asegurar que los canvas existan
-  afterUpdate(() => {
-    if(reportes && canvasEstado && canvasArea && !chartEstadoInstance && !chartAreaInstance){
-        updateCharts();
     }
   });
 
