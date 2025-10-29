@@ -1,10 +1,12 @@
 <script>
   // Importamos Chart.js y funciones de Svelte
   import { Chart, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, afterUpdate } from 'svelte';
 
-  // NO registramos aquí
-  
+  // --- ¡REGISTRO GLOBAL! ---
+  // Registramos todos los componentes necesarios.
+  Chart.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
+
   // Recibimos los datos cargados
   export let data;
   $: reportes = data.reportes;
@@ -16,49 +18,78 @@
   let canvasEstado;
   let canvasArea;
 
+  // Variables para los datos de los gráficos (se inicializan vacías)
+  let chartDataEstado = { labels: [], datasets: [] };
+  let chartDataArea = { labels: [], datasets: [] };
+
   // Opciones
   const options = { responsive: true, maintainAspectRatio: false };
   const optionsArea = { ...options, indexAxis: 'y', scales: { x: { beginAtZero: true } } };
 
-  // --- CREAMOS GRÁFICOS CUANDO EL COMPONENTE SE MONTA ---
-  onMount(() => {
-    // --- ¡REGISTRAMOS LOS COMPONENTES AQUÍ DENTRO! ---
-    // Esto asegura que se registren en el navegador antes de usarlos.
-    try {
-      Chart.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
-    } catch (e) {
-      console.error("Error al registrar Chart.js:", e);
-    }
-    // --- Fin del Registro ---
-
-    // Ahora intentamos crear los gráficos
+  // --- FUNCIÓN PARA CREAR O ACTUALIZAR GRÁFICOS ---
+  function updateCharts() {
+    // Solo si hay datos y los canvas existen
     if (reportes && canvasEstado) {
-      const chartDataEstado = {
+      // Preparamos datos para gráfico de estado (Dona)
+      chartDataEstado = {
         labels: reportes.ticketsPorEstado?.map(item => item.nombre_estado) || [],
         datasets: [{
             label: 'Tickets por Estado', data: reportes.ticketsPorEstado?.map(item => item.total) || [],
-            backgroundColor: ['#3B82F6','#F59E0B','#10B981','#8B5CF6'],
-            borderColor: ['#2563EB','#D97706','#059669','#7C3AED'], borderWidth: 1,
+            backgroundColor: ['#3B82F6','#F59E0B','#10B981','#8B5CF6'], // Azul, Naranja, Verde, Morado
+            borderColor: ['#FFFFFF'], // Borde blanco
+            borderWidth: 2,
           },],
       };
+      // Destruimos el gráfico anterior si existe
       if (chartEstadoInstance) chartEstadoInstance.destroy();
-      chartEstadoInstance = new Chart(canvasEstado, { type: 'doughnut', data: chartDataEstado, options: options });
+      // Creamos el nuevo gráfico, asegurando el tipo 'doughnut'
+      try {
+        chartEstadoInstance = new Chart(canvasEstado, {
+          type: 'doughnut', // <-- TIPO CORRECTO
+          data: chartDataEstado,
+          options: options
+        });
+      } catch (e) {
+        console.error("Error creando gráfico Doughnut:", e);
+      }
     }
 
     if (reportes && canvasArea) {
-      const chartDataArea = {
+      // Preparamos datos para gráfico de área (Barras)
+      chartDataArea = {
         labels: reportes.ticketsPorArea?.map(item => item.nombre_area) || [],
         datasets: [{
             label: 'Total Tickets por Área', data: reportes.ticketsPorArea?.map(item => item.total) || [],
-            backgroundColor: 'rgba(92, 184, 138, 0.7)', borderColor: '#5CB88A', borderWidth: 1,
+            backgroundColor: 'rgba(92, 184, 138, 0.8)', // Verde principal (más opaco)
+            borderColor: '#5CB88A',
+            borderWidth: 1,
           },],
       };
+      // Destruimos el gráfico anterior si existe
       if (chartAreaInstance) chartAreaInstance.destroy();
-      chartAreaInstance = new Chart(canvasArea, { type: 'bar', data: chartDataArea, options: optionsArea });
+      // Creamos el nuevo gráfico, asegurando el tipo 'bar'
+      try {
+        chartAreaInstance = new Chart(canvasArea, {
+          type: 'bar', // <-- TIPO CORRECTO
+          data: chartDataArea,
+          options: optionsArea
+        });
+      } catch (e) {
+        console.error("Error creando gráfico Bar:", e);
+      }
+    }
+  }
+
+  // Usamos afterUpdate para asegurar que los canvas existan en el DOM
+  afterUpdate(() => {
+    // Llamamos a updateCharts solo la primera vez que 'reportes' tiene datos
+    // y los canvas están listos.
+    if(reportes && canvasEstado && canvasArea && !chartEstadoInstance && !chartAreaInstance){
+        updateCharts();
     }
   });
 
-  // Destruimos al salir
+  // Destruimos los gráficos al salir de la página
   onDestroy(() => {
     if (chartEstadoInstance) chartEstadoInstance.destroy();
     if (chartAreaInstance) chartAreaInstance.destroy();
@@ -88,7 +119,7 @@
       <div class="lg:col-span-1 space-y-8">
           <div class="bg-white p-6 rounded-xl shadow-lg h-80 relative flex flex-col">
             <h2 class="text-xl font-semibold text-oscuro mb-4 text-center">Tickets por Estado</h2>
-            <div class="flex-grow relative">
+            <div class="flex-grow relative min-h-0"> 
                {#if reportes.ticketsPorEstado && reportes.ticketsPorEstado.length > 0}
                  <canvas bind:this={canvasEstado}></canvas>
                {:else}
@@ -106,7 +137,7 @@
       <div class="lg:col-span-2 space-y-8">
           <div class="bg-white p-6 rounded-xl shadow-lg h-96 relative flex flex-col">
             <h2 class="text-xl font-semibold text-oscuro mb-4 text-center">Tickets por Área</h2>
-            <div class="flex-grow relative">
+            <div class="flex-grow relative min-h-0"> 
               {#if reportes.ticketsPorArea && reportes.ticketsPorArea.length > 0}
                  <canvas bind:this={canvasArea}></canvas>
               {:else}
