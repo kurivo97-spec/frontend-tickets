@@ -1,13 +1,10 @@
 <script>
-  // Importamos Chart.js y funciones de Svelte
-  import { Chart, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement } from 'chart.js';
-  // --- ¡CORRECCIÓN AQUÍ! ---
+  // --- ¡CAMBIO CLAVE! Importamos la versión "auto" ---
+  import Chart from 'chart.js/auto'; 
+  // ------------------------------------------------
+  
   import { onDestroy } from 'svelte'; 
-  import { browser } from '$app/environment'; // Esta es la importación correcta para 'browser'
-  // --------------------------
-
-  // --- ¡REGISTRO GLOBAL! ---
-  Chart.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
+  import { browser } from '$app/environment';
 
   // Recibimos los datos cargados
   export let data;
@@ -28,7 +25,7 @@
       labels: reportes.ticketsPorEstado?.map(item => item.nombre_estado) || [],
       datasets: [{
           label: 'Tickets por Estado', data: reportes.ticketsPorEstado?.map(item => item.total) || [],
-          backgroundColor: ['#3B82F6','#F59E0B','#10B981','#8B5CF6'],
+          backgroundColor: ['#3B82F6','#F59E0B','#10B981','#8B5CF6'], // Azul, Naranja, Verde, Morado
           borderColor: ['#FFFFFF'], borderWidth: 2,
         },],
     };
